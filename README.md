@@ -1,4 +1,4 @@
-# Soft Hours
+# Virtual World
 
 A tiny surreal 3D world in the browser. You walk a little robot across a Dalí-style desert where clocks melt over branches and rooftops, elephants stride by on spider legs, and three strange buildings stand on the sand. Sit on the melting bench and the world slides into a psychedelic trip: kaleidoscope sky, a giant eye, rainbow mandala ground, floating eyes and shimmering music. Stand up and it fades back.
 
