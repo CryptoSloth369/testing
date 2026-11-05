@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Soft Hours</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink: #2a1b10; --sand: #e9cf9c; --teal: #2f5d6b; --gold: #c49a45; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #1a120b; color: #f6ead2; font-family: 'Cormorant Garamond', Georgia, serif; }
+    #app canvas { display: block; }
+    .hidden { display: none !important; }
+
+    #intro {
+      position: fixed; inset: 0; display: grid; place-items: center; text-align: center;
+      background: radial-gradient(ellipse at 50% 30%, rgba(47,93,107,.55), rgba(26,18,11,.92) 70%);
+      backdrop-filter: blur(3px);
+    }
+    #intro h1 { font-size: clamp(48px, 9vw, 110px); font-style: italic; font-weight: 500; margin: 0; letter-spacing: .02em;
+      background: linear-gradient(90deg, #f2d77e, #f08bb4, #9ad2e8, #f2d77e); background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text; color: transparent; animation: hue 8s linear infinite; }
+    @keyframes hue { to { background-position: 300% 0; } }
+    #intro p { font-size: 22px; margin: 10px 0 34px; opacity: .85; }
+    #intro .keys { font-size: 18px; opacity: .8; line-height: 1.7; margin-top: 28px; }
+    kbd { font-family: inherit; border: 1px solid rgba(246,234,210,.5); border-radius: 5px; padding: 0 7px; margin: 0 2px; }
+    #enter { font: inherit; font-size: 24px; padding: 12px 36px; border-radius: 40px; cursor: pointer; color: var(--ink);
+      background: linear-gradient(135deg, #f2d77e, #e9a15a); border: none; box-shadow: 0 6px 30px rgba(242,215,126,.35); }
+    #enter:hover { filter: brightness(1.08); }
+    #loading { font-size: 20px; }
+    #loadtrack { width: 220px; height: 3px; background: rgba(255,255,255,.15); margin: 12px auto 0; border-radius: 2px; overflow: hidden; }
+    #loadbar { height: 100%; width: 0; background: var(--gold); transition: width .2s; }
+
+    #hud .hint { position: fixed; left: 18px; bottom: 16px; font-size: 16px; line-height: 1.6; opacity: .75;
+      text-shadow: 0 1px 3px rgba(0,0,0,.6); pointer-events: none; }
+    #prompt { position: fixed; left: 50%; bottom: 14%; transform: translateX(-50%) translateY(10px); font-size: 24px; font-style: italic;
+      padding: 8px 22px; border-radius: 30px; background: rgba(26,18,11,.55); opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; }
+    #prompt.show { opacity: 1; transform: translateX(-50%); }
+    #prompt.seated { opacity: .55; font-size: 18px; bottom: 6%; }
+    #toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); font-size: 18px; padding: 6px 18px; border-radius: 20px;
+      background: rgba(26,18,11,.6); opacity: 0; transition: opacity .3s; pointer-events: none; }
+    #toast.show { opacity: 1; }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "./lib/three/build/three.module.js", "three/addons/": "./lib/three/examples/jsm/" } }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="intro">
+    <div>
+      <h1>Soft Hours</h1>
+      <p>A desert where time melts. Find the bench, and sit a while.</p>
+      <div id="loading">Waking the dreamer…<div id="loadtrack"><div id="loadbar"></div></div></div>
+      <button id="enter" class="hidden">Enter the dream</button>
+      <div class="keys">
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>Shift</kbd> run · mouse look · scroll zoom<br>
+        <kbd>E</kbd> sit / stand · <kbd>Q</kbd> dance · <kbd>M</kbd> sound · <kbd>P</kbd> paint filter · <kbd>Esc</kbd> free the mouse
+      </div>
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div class="hint">WASD walk · Shift run · E sit · Q dance · M sound · P paint</div>
+    <div id="prompt"></div>
+    <div id="toast"></div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
