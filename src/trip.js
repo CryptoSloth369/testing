@@ -97,7 +97,9 @@ const PaintShader = {
       if (a1 < best) { best = a1; col = m1; }
       if (a2 < best) { best = a2; col = m2; }
       if (a3 < best) { best = a3; col = m3; }
-      gl_FragColor = vec4(col, 1.0);
+      // never let a NaN/Inf pixel through: bloom would smear it across the whole screen
+      if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
+      gl_FragColor = vec4(clamp(col, 0.0, 64.0), 1.0);
     }`
 };
 
@@ -116,7 +118,7 @@ const TripShader = {
       vec2 uv = vUv;
       vec2 c = (uv - 0.5) * vec2(uAspect, 1.0);
       float r = length(c);
-      float a = atan(c.y, c.x);
+      float a = atan(c.y, c.x + 1e-5);
 
       // breathing ripples
       uv += (c / max(r, 1e-4)) * uTrip * 0.012 * sin(r * 24.0 - uTime * 2.2) / vec2(uAspect, 1.0);
@@ -139,14 +141,15 @@ const TripShader = {
         vec3 k = texture2D(tDiffuse, kuv).rgb;
         float edge = smoothstep(0.3, 0.8, r) * uTrip * 0.55;
         col = mix(col, k, edge);
-        col = hueShift(col, uTrip * (uTime * 0.4 + r * 3.0));
+        col = max(hueShift(col, uTrip * (uTime * 0.4 + r * 3.0)), vec3(0.0));
       }
 
       // warm painted vignette + film grain
       float vig = smoothstep(1.05, 0.35, r);
       col *= mix(vec3(0.55, 0.42, 0.32), vec3(1.0), vig);
       col += (hash(vUv * 1000.0 + uTime) - 0.5) * 0.035;
-      gl_FragColor = vec4(col, 1.0);
+      if (any(isnan(col)) || any(isinf(col))) col = vec3(0.0);
+      gl_FragColor = vec4(max(col, vec3(0.0)), 1.0);
     }`
 };
 

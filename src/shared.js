@@ -137,7 +137,7 @@ export function tripify(mat, { mode = 'surface', strength = 1, calm = 0, glow = 
     const tripCode = mode === 'ground' ? `
         vec2 gd = vTripW.xz - uCenter;
         float gr = length(gd);
-        float ga = atan(gd.y, gd.x) + uTime*0.04;
+        float ga = atan(gd.y, gd.x + 1e-4) + uTime*0.04;
         float gfa = abs(mod(ga*12.0/6.28318, 2.0) - 1.0);
         float gpat = sin(gr*1.1 - uTime*2.5 + gfa*5.0) * cos(gfa*7.0 + gr*0.35 - uTime*0.8);
         float chk = step(0.0, sin(gr*2.0 - uTime*1.5) * sin(gfa*9.42));
@@ -161,7 +161,7 @@ export function tripify(mat, { mode = 'surface', strength = 1, calm = 0, glow = 
         float tripK = 0.0;
         if (uTrip > 0.001) {
           ${tripCode}
-          tripPsy = pow(tripPsy, vec3(1.8));
+          tripPsy = pow(max(tripPsy, vec3(0.0)), vec3(1.8));
           float front = uTrip * 120.0;
           float reveal = 1.0 - smoothstep(front - 14.0, front, length(vTripW.xz - uCenter));
           tripK = clamp(uTrip * uStrength, 0.0, 1.0) * reveal;

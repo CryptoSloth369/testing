@@ -27,7 +27,7 @@ vec3 calmSky(vec3 d){
   vec3 col = mix(horizon, mid, smoothstep(0.0, 0.2, h));
   col = mix(col, top, smoothstep(0.2, 0.75, h));
   // long thin clouds near the horizon
-  float az = atan(d.z, d.x);
+  float az = atan(d.z, d.x + 1e-5);
   float n = snoise(vec3(az*3.0, h*22.0, uTime*0.01)) * 0.6 + snoise(vec3(az*9.0, h*60.0, 2.0)) * 0.4;
   float clouds = smoothstep(0.35, 0.85, n) * smoothstep(0.03, 0.1, h) * smoothstep(0.4, 0.12, h);
   col = mix(col, vec3(1.0,0.96,0.88), clouds * 0.55);
@@ -37,7 +37,7 @@ vec3 calmSky(vec3 d){
 }
 vec3 tripSky(vec3 d){
   float el = acos(clamp(d.y, -1.0, 1.0));
-  float a = atan(d.z, d.x) + uTime*0.05;
+  float a = atan(d.z, d.x + 1e-5) + uTime*0.05;
   float fa = abs(mod(a*10.0/6.28318, 2.0) - 1.0);
   vec2 kp = vec2(cos(fa*0.6), sin(fa*0.6)) * el * 3.0;
   float n = snoise(vec3(kp*1.6, uTime*0.15));
@@ -53,13 +53,13 @@ vec3 tripSky(vec3 d){
   vec3 ex = normalize(cross(vec3(0.0,1.0,0.0), ed));
   vec3 ey = cross(ed, ex);
   float fwd = dot(d, ed);
-  if (fwd > 0.0) {
-    vec2 ep = vec2(dot(d, ex), dot(d, ey)) / fwd / 0.3;
+  if (fwd > 0.2) {
+    vec2 ep = clamp(vec2(dot(d, ex), dot(d, ey)) / fwd / 0.3, -4.0, 4.0);
     float open = smoothstep(0.55, 1.0, uTrip) * (1.0 - pow(abs(sin(uTime*0.35)), 60.0));
     float lid = 0.55 * open * (1.0 - ep.x*ep.x);
     float inside = step(abs(ep.y), lid) * step(abs(ep.x), 1.0);
     float ir = length(ep);
-    float ang = atan(ep.y, ep.x);
+    float ang = atan(ep.y, ep.x + 1e-5);
     vec3 eye = vec3(0.86,0.8,0.74);
     vec3 iris = psyPal(ir*3.5 - uTime*0.3) * (0.65 + 0.35*sin(ang*48.0 + ir*10.0));
     eye = mix(eye, iris, smoothstep(0.34, 0.32, ir));
@@ -77,7 +77,7 @@ void main(){
   vec3 col = calmSky(dd);
   if (uTrip > 0.001) col = mix(col, tripSky(dd), uTrip);
   if (d.y < 0.0) col *= 0.82;
-  gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0);
+  gl_FragColor = vec4(pow(max(col, vec3(0.0)), vec3(2.2)), 1.0);
 }`;
 
 function makeSky() {
