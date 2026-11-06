@@ -70,11 +70,11 @@ export function createEyes(scene, anchors) {
 // ---------------------------------------------------------------- post-processing
 const PaintShader = {
   // Kuwahara filter: flattens the image into brush-like patches, like oil paint.
+  defines: { R: 3 },
   uniforms: { tDiffuse: { value: null }, uRes: { value: new THREE.Vector2(1, 1) } },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */`
     uniform sampler2D tDiffuse; uniform vec2 uRes; varying vec2 vUv;
-    #define R 3
     void quad(vec2 o, inout vec3 m, inout vec3 s){
       vec2 px = 1.0 / uRes;
       for (int j = 0; j <= R; j++) for (int i = 0; i <= R; i++) {
@@ -150,10 +150,10 @@ const TripShader = {
     }`
 };
 
-export function createPost(renderer, scene, camera) {
+export function createPost(renderer, scene, camera, { paintRadius = 3 } = {}) {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const paint = new ShaderPass(PaintShader);
+  const paint = new ShaderPass({ ...PaintShader, defines: { R: paintRadius } });
   composer.addPass(paint);
   const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.25, 0.6, 0.9);
   composer.addPass(bloom);

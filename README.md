@@ -10,7 +10,7 @@ It's a static site with no build step, but it has to be served over HTTP (ES mod
 python3 -m http.server 8000
 ```
 
-Then open http://localhost:8000. Desktop browsers only for now.
+Then open http://localhost:8000. Works on desktop browsers and phones.
 
 ## Controls
 
@@ -26,6 +26,8 @@ Then open http://localhost:8000. Desktop browsers only for now.
 | P | oil-paint filter on/off |
 | Esc | release the mouse |
 
+On a phone or tablet the game switches to touch controls automatically: drag with your left thumb to walk (push to the edge to run), drag on the right side to look, pinch to zoom, and use the **Sit / Stand**, **Dance** and **♪** buttons. Graphics are lightened a little on phones to keep it smooth.
+
 `?trip=0.5` (or any value 0–1) in the URL forces the trip level, which is handy for testing visuals.
 
 ## What's where
@@ -35,6 +37,7 @@ Then open http://localhost:8000. Desktop browsers only for now.
 - `src/clocks.js`: melting clock builder (bent geometry, hands that run backwards)
 - `src/player.js`: robot loading, animation states, movement, collision, sitting
 - `src/camera.js`: third-person orbit camera
+- `src/touch.js`: phone controls (joystick, look, pinch zoom, buttons)
 - `src/trip.js`: trip curve, floating eyes, post-processing (oil paint, bloom, kaleidoscope/chromatic shader)
 - `src/audio.js`: generative Web Audio soundscape
 - `src/shared.js`: noise, the shader patch that makes every material react to the trip, helpers

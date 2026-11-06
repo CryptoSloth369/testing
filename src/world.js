@@ -194,7 +194,7 @@ function makeElephant(scene) {
   return { e, legs, body };
 }
 
-export function createWorld(scene, renderer) {
+export function createWorld(scene, renderer, { shadowSize = 4096 } = {}) {
   const colliders = [];
   const clocks = [];
 
@@ -216,7 +216,7 @@ export function createWorld(scene, renderer) {
   sun.position.copy(SUN_DIR).multiplyScalar(140).add(new THREE.Vector3(0, 0, -10));
   sun.target.position.set(0, 0, -10);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(4096, 4096);
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
   Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 1, far: 320 });
   sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
   scene.add(sun, sun.target);

@@ -11,20 +11,26 @@ export class FollowCamera {
     this.idle = 0;
     this.dragging = false;
 
-    const look = (dx, dy) => {
-      this.yaw -= dx * 0.0032;
-      this.pitch = THREE.MathUtils.clamp(this.pitch + dy * 0.0026, -0.25, 1.2);
-      this.idle = 0;
-    };
+    const look = (dx, dy) => this.look(dx, dy);
     document.addEventListener('mousemove', (e) => {
       if (document.pointerLockElement === dom || this.dragging) look(e.movementX, e.movementY);
     });
     dom.addEventListener('mousedown', () => { if (document.pointerLockElement !== dom) this.dragging = true; });
     window.addEventListener('mouseup', () => (this.dragging = false));
     dom.addEventListener('wheel', (e) => {
-      this.dist = THREE.MathUtils.clamp(this.dist + Math.sign(e.deltaY) * 0.6, 2.5, 16);
+      this.zoom(Math.sign(e.deltaY) * 0.6);
       e.preventDefault();
     }, { passive: false });
+  }
+
+  look(dx, dy) {
+    this.yaw -= dx * 0.0032;
+    this.pitch = THREE.MathUtils.clamp(this.pitch + dy * 0.0026, -0.25, 1.2);
+    this.idle = 0;
+  }
+
+  zoom(amount) {
+    this.dist = THREE.MathUtils.clamp(this.dist + amount, 2.5, 16);
   }
 
   snap(pos) {

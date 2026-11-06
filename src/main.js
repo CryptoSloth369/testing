@@ -6,13 +6,14 @@ import { loadPlayer } from './player.js';
 import { FollowCamera } from './camera.js';
 import { Trip, createEyes, createPost } from './trip.js';
 import { Soundscape } from './audio.js';
+import { createTouchControls, IS_TOUCH } from './touch.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 
 // ---------- renderer / scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setPixelRatio(Math.min(devicePixelRatio, IS_TOUCH ? 1.25 : 1.5));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -22,14 +23,20 @@ $('app').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 1200);
+const fitCamera = () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.fov = camera.aspect < 1 ? 72 : 55;   // wider view when a phone is held upright
+  camera.updateProjectionMatrix();
+};
+fitCamera();
 
-const world = createWorld(scene, renderer);
+const world = createWorld(scene, renderer, { shadowSize: IS_TOUCH ? 2048 : 4096 });
 const buildings = createBuildings(scene);
 const colliders = [...world.colliders, ...buildings.colliders];
 U.uCenter.value.set(buildings.bench.seat.x, buildings.bench.seat.z);
 const updateEyes = createEyes(scene, buildings.eyeAnchors);
 
-const post = createPost(renderer, scene, camera);
+const post = createPost(renderer, scene, camera, { paintRadius: IS_TOUCH ? 2 : 3 });
 post.setSize(innerWidth, innerHeight);
 const follow = new FollowCamera(camera, renderer.domElement);
 const trip = new Trip();
@@ -41,16 +48,23 @@ const input = { forward: 0, right: 0, run: false, moving: false };
 const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
 let player = null;
 
+function toggleSit() {
+  if (!player) return;
+  if (player.state === 'seated') player.stand();
+  else if (player.canSit(buildings.bench)) player.sit(buildings.bench);
+}
+function toggleDance() {
+  if (player && player.state === 'free') player.dancing = !player.dancing;
+}
+const touch = createTouchControls({ follow, onSit: toggleSit, onDance: toggleDance, onSound: () => sound.toggleMute() });
+
 addEventListener('keydown', (e) => {
   if (MOVE_KEYS.includes(e.code) || e.code === 'Space') e.preventDefault();
   if (e.repeat) return;
   keys.add(e.code);
   if (!player) return;
-  if (e.code === 'KeyE') {
-    if (player.state === 'seated') player.stand();
-    else if (player.canSit(buildings.bench)) player.sit(buildings.bench);
-  }
-  if (e.code === 'KeyQ' && player.state === 'free') player.dancing = !player.dancing;
+  if (e.code === 'KeyE') toggleSit();
+  if (e.code === 'KeyQ') toggleDance();
   if (e.code === 'KeyM') toast(sound.toggleMute() ? 'Sound off' : 'Sound on');
   if (e.code === 'KeyP') toast(post.togglePaint() ? 'Oil paint filter on' : 'Oil paint filter off');
 });
@@ -62,6 +76,11 @@ function readInput() {
   input.forward = (k('KeyW', 'ArrowUp') ? 1 : 0) - (k('KeyS', 'ArrowDown') ? 1 : 0);
   input.right = (k('KeyD', 'ArrowRight') ? 1 : 0) - (k('KeyA', 'ArrowLeft') ? 1 : 0);
   input.run = k('ShiftLeft', 'ShiftRight');
+  if (touch && touch.state.mag > 0) {
+    input.forward = touch.state.forward;
+    input.right = touch.state.right;
+    input.run = touch.run;
+  }
   input.moving = input.forward !== 0 || input.right !== 0;
 }
 
@@ -76,15 +95,15 @@ $('enter').addEventListener('click', () => {
   $('intro').classList.add('hidden');
   $('hud').classList.remove('hidden');
   sound.start();
-  renderer.domElement.requestPointerLock?.();
+  if (IS_TOUCH) document.documentElement.requestFullscreen?.()?.catch(() => {});
+  else renderer.domElement.requestPointerLock?.();
 });
 renderer.domElement.addEventListener('click', () => {
-  if ($('intro').classList.contains('hidden') && document.pointerLockElement !== renderer.domElement) renderer.domElement.requestPointerLock?.();
+  if (!IS_TOUCH && $('intro').classList.contains('hidden') && document.pointerLockElement !== renderer.domElement) renderer.domElement.requestPointerLock?.();
 });
 
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
+  fitCamera();
   renderer.setSize(innerWidth, innerHeight);
   post.setSize(innerWidth, innerHeight);
 });
@@ -112,7 +131,10 @@ function frame() {
     follow.update(dt, player.position, player.seated, tv);
     updateEyes(dt, t, tv, player.headPos);
     $('prompt').className = player.canSit(buildings.bench) ? 'show' : player.state === 'seated' ? 'show seated' : '';
-    $('prompt').textContent = player.state === 'seated' ? 'Press E (or move) to stand up' : 'Press E to sit on the bench';
+    $('prompt').textContent = IS_TOUCH
+      ? (player.state === 'seated' ? 'Tap Stand (or move) to get up' : 'Tap Sit to sit on the bench')
+      : (player.state === 'seated' ? 'Press E (or move) to stand up' : 'Press E to sit on the bench');
+    touch?.setSit(player.state === 'seated' ? 'Stand' : player.canSit(buildings.bench) ? 'Sit' : null);
   }
   sound.update(tv);
   post.render(t, tv);
