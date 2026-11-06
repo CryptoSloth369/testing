@@ -150,7 +150,7 @@ loadPlayer(scene, (p) => ($('loadbar').style.width = `${Math.round(p * 100)}%`))
   window.__dream = { player, trip, follow, buildings, keys, camera, renderer };
 }).catch((err) => {
   console.error(err);
-  $('loading').textContent = 'Could not load the dreamer (assets/RobotExpressive.glb).';
+  $('loading').textContent = `Could not load the dreamer: ${err?.message || err}`;
 });
 
 frame();
