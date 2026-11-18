@@ -42,6 +42,12 @@ On a phone or tablet the game switches to touch controls automatically: drag wit
 - `src/audio.js`: generative Web Audio soundscape
 - `src/shared.js`: noise, the shader patch that makes every material react to the trip, helpers
 
+## Notes, testing and publishing
+
+- `docs/PROJECT-NOTES.md`: the full story of this project (decisions, art references, open issues, Mystic Sloth reading notes, how to pick it up again)
+- `tools/smoke-test.cjs`: headless walk/sit/trip test with screenshots (`node tools/smoke-test.cjs` or `... phone`)
+- `tools/build-artifact.mjs`: builds the self-contained copy used for the claude.ai artifact link
+
 ## Credits
 
 - [three.js](https://threejs.org) r160 (MIT), vendored in `lib/three/`
